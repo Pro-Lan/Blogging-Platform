@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    文章詳情
+{% endblock title %}
+
+
+{% block content %}
+
+<!-- 文章詳情 -->
+<div class="container">
+    <div class="row">
+        <!-- 標題及作者 -->
+        <div class="col-9">
+            <h1 class="mt-4 mb-4">{{ article.title }}</h1>
+            <div class="alert alert-success">
+                <div>
+                作者：{{ article.author }}
+                {% if user == article.author %}
+                    <a href="#" onclick="confirm_safe_delete()">删除文章</a>
+                    <form 
+                    style="display:none;" 
+                    id="safe_delete"
+                    action="{% url 'article:article_safe_delete' article.id %}" 
+                    method="POST"
+                    >
+                    {% csrf_token %}
+                    <button type="submit">發送</button>
+                    </form>
+                    <a href="{% url "article:article_update" article.id %}">編輯文章</a>
+                {% endif %}
+                </div>
+                <div>
+                瀏覽：{{ article.total_views }}
+                </div>
+            </div>
+       
+
+            <!-- 文章正文 -->
+            <div class="col-12">
+                <p>{{ article.body|safe }}</p>
+            </div>
+        
+         <!-- 發表評論 -->
+        <hr>
+        {% if user.is_authenticated %}
+            <div>
+                <form 
+                    action="{% url 'comment:post_comment' article.id %}" 
+                    method="POST"
+                >
+                {% csrf_token %}
+                    <div class="form-group">
+                        <label for="body">
+                            <strong>
+                                我也要發言：
+                            </strong>
+                        </label>
+                        <textarea 
+                            type="text" 
+                            class="form-control" 
+                            id="body" 
+                            name="body" 
+                            rows="2"></textarea>
+                    </div>
+                    <br>
+                    <!-- 提交按鈕 -->
+                    <button type="submit" class="btn btn-primary ">發送</button>                    
+                </form>
+            </div>
+            <br>
+        {% else %}
+            <br>
+            <h5 class="justify-content-center">
+                請<a href="{% url 'userprofile:login' %}">登入</a>才能評論
+            </h5>
+            <br>
+        {% endif %}
+
+
+
+        <!-- 顯示評論 -->
+        <h4>共有{{ comments.count }}條評論</h4>
+        <div>
+            {% for comment in comments %}
+                <hr>
+                <p>
+                    <strong style="color: pink">
+                        {{ comment.user }}
+                    </strong> 於 
+                    <span style="color: green">
+                        {{ comment.created|date:"Y-m-d H:i:s" }}
+                    </span> 時說：
+                </p>
+                <pre style="font-family: inherit; font-size: 1em;">
+{{ comment.body }}</pre>
+            {% endfor %}
+        </div>
+    </div>
+        <!-- 文章目錄 -->
+        <div class="col-3 mt-4" id="sidebar" class="sidebar">
+            <div class="sidebar__inner">
+                <h4><strong>目錄</strong></h4>
+                <hr>
+                <div>
+                    {{ toc|safe }}
+                </div>
+            </div>
+        </div>
+       
+    </div>
+</div>
+
+
+<script>
+    // 刪除文章的函數
+    function confirm_safe_delete() {
+        // 調用layer彈窗組件
+        layer.open({
+            title: "確認删除",
+            content: "確認刪除這篇文章嗎？",
+            // 點擊確定按鈕後調用的回調函數
+            yes: function(index, layero) {
+                $('form#safe_delete button').click();
+                layer.close(index);
+            }
+        })
+    }
+</script>
+{% endblock content %}
+
+

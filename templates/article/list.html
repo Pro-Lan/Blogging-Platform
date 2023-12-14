@@ -1,0 +1,170 @@
+{% extends "base.html" %} 
+{% include 'back_to_top_func.html' %}
+{% load static %}
+{% block title %} 
+首頁 
+{% endblock title %} 
+{% block content %}
+
+
+<div class="container" >
+    <br>
+    <!-- 麵包屑導航 -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'article:article_list' %}?search={{ search }}&column={{ column }}">
+                    最新
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'article:article_list' %}?order=total_views&search={{ search }}&column={{ column }}">
+                    最熱門
+                </a>
+            </li>
+        </ol>
+    </nav>
+    <!-- 搜尋欄 -->
+    <div class="row">
+        <div class="col-auto mr-auto">
+            <form class="form-inline" >
+                <input type="text" 
+                    class="form-control mb-2 mr-sm-2" 
+                    name="search" 
+                    placeholder="搜索文章..." 
+                    required
+                >
+            </form>
+        </div>
+    </div>
+
+    <!-- 搜尋提示 -->
+    {% if search %}
+    {% if articles %}
+        <h4><span style="color: red">"{{ search }}"</span>的搜尋結果如下：</h4>
+        <hr>        
+    {% else %}
+        <h4>暫無<span style="color: red">"{{ search }}"</span>有關的文章。</h4>
+        <hr>
+    {% endif %}
+    
+    {% endif %}
+
+    <!-- 列表循環 -->
+    <div class="row mt-2">
+        {% for article in articles %}
+            <!-- 文章內容 -->
+            <!-- 標題圖 -->
+            {% if article.avatar %}
+            <div class="col-3">
+                <img src="{{ article.avatar.url }}" 
+                    alt="avatar" 
+                    style="max-width:100%;max-height:90%;border-radius: 50px"
+                >
+            </div>
+            {% endif %}
+            
+            <div class="col">
+                <!-- 分類 -->
+                {% if article.column %}
+                <a  role="button" 
+                    href="{% url 'article:article_list' %}?column={{ article.column.id }}"
+                    class="btn btn-sm mb-2
+                            {% if article.column.title == '技術' %}
+                                btn-primary
+                            {% elif article.column.title == '旅遊' %}
+                                btn-success
+                            {% elif article.column.title == '其他' %}
+                                btn-danger
+                            {% elif article.column.title == '美食' %}
+                                btn-warning
+                            {% elif article.column.title == '3C' %}
+                                btn-info
+                            {% endif %}
+                        "
+                    >
+                        {{ article.column }}
+                      </a>
+                {% endif %}
+              
+               
+                <!-- 標題 -->
+                <h4>
+                    <b>
+                        <a href="{% url 'article:article_detail' article.id %}"
+                        style="color: black;" 
+                        >
+                            {{ article.title }}
+                        </a>
+                    </b>
+                </h4>
+                <!-- 摘要 -->
+                <div>
+                    <p style="color: gray;">
+                        {{ article.body|slice:'100' }}...
+                    </p>
+                </div>
+                <!-- 駐腳 -->
+                <p>
+                    <!-- 附加信息 -->
+                    <span style="color: green;">
+                        <i class="fas fa-eye" style="color: lightskyblue;"></i>
+                        {{ article.total_views }} 瀏覽&nbsp;&nbsp;&nbsp;
+                    </span>
+                    <span style="color: blue;">
+                        <i class="fas fa-comments" style="color: yellowgreen;"></i>
+                        {{ article.created|date:'Y-m-d' }} 發佈&nbsp;&nbsp;&nbsp;
+                    </span>
+                    <span style="color: darkred;">
+                        <i class="fas fa-clock" style="color: pink;"></i>
+                        {{ article.updated|date:'Y-m-d' }} 更新
+                    </span>
+                </p>
+                
+            </div>
+            
+            <hr style="width: 100%;"/>
+            
+        {% endfor %}
+    </div>
+
+
+
+
+    <div class="pagination" >
+        <div class="m-auto">
+            <span class="step-links">
+                <!-- 如果不是第一頁，則顯示上翻按鈕 -->
+                {% if articles.has_previous %}
+                <a href="?page=1&order={{ order }}&search={{ search }}&column={{ column }}" class="btn btn-success">&laquo; 1</a>
+                <span>...</span>
+                <a href="?page={{ articles.previous_page_number }}&order={{ order }}&search={{ search }}&column={{ column }}" 
+                       class="btn btn-secondary"
+                    >
+                    {{ articles.previous_page_number }}
+                </a>
+                {% endif %}
+
+                <!-- 當前頁面 -->
+                <span class="current btn btn-danger btn-lg">{{ articles.number }}</span>
+
+                <!-- 如果不是最末頁，則顯示下翻按鈕 -->
+                {% if articles.has_next %}
+                <a href="?page={{ articles.next_page_number }}&order={{ order }}&search={{ search }}&column={{ column }}"
+                class="btn btn-secondary"
+             >
+                    {{ articles.next_page_number }}
+                </a>
+                <span>...</span>
+                <a href="?page={{ articles.paginator.num_pages }}&order={{ order }}&search={{ search }}&column={{ column }}"
+                class="btn btn-success"
+             >   
+                    {{ articles.paginator.num_pages }} &raquo;
+                </a>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+   
+</div>
+{% endblock content %}
